@@ -1,0 +1,12 @@
+apply plugin: 'kotlin-platform-js'
+
+project(':environment:js:indirect') {
+    apply plugin: 'kotlin-platform-js'
+    dependencies {
+        compile project(':environment:js')
+    }
+}
+
+dependencies {
+    expectedBy project(':environment:core')
+}

@@ -1,0 +1,128 @@
+buildscript {
+    ext.kotlin_version = '1.2.61'
+    repositories {
+        maven {
+            url "https://dl.bintray.com/kotlin/kotlin-eap"
+        }
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'org.jetbrains.kotlin:kotlin-frontend-plugin:0.0.37'
+    }
+}
+
+plugins {
+    id 'kotlin-platform-common' version '1.2.61' apply false
+    id 'kotlin-platform-js' version '1.2.61' apply false
+    id 'kotlin-dce-js' version '1.2.61' apply false
+}
+
+allprojects {
+    group 'issue'
+    version '1.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    afterEvaluate {
+        def parents = []
+        def proj = it
+        while (proj != null) {
+            parents += proj.name
+            proj = proj.parent
+        }
+        def fn = parents.reverse().join('-')
+
+        if (it.plugins.hasPlugin('kotlin-platform-js')) {
+            dependencies {
+                testCompile "org.jetbrains.kotlin:kotlin-test-js:$kotlin_version"
+            }
+
+            if (path == ':environment:js') {
+                dependencies {
+                    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core-js:0.25.0"
+                    compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlin_version"
+                }
+            } else if (path != ':environment:js:indirect') {
+                dependencies {
+                    compile project(':environment:js:indirect')
+                }
+            }
+
+            compileKotlin2Js {
+                kotlinOptions {
+                    metaInfo = true
+                    sourceMap = true
+                    moduleKind = "commonjs"
+                    main = "call"
+                }
+            }
+
+            compileTestKotlin2Js {
+                kotlinOptions {
+                    metaInfo = true
+                    sourceMap = true
+                    moduleKind = "commonjs"
+                }
+            }
+
+            kotlin {
+                experimental {
+                    coroutines 'enable'
+                }
+            }
+
+            if (it.plugins.hasPlugin('org.jetbrains.kotlin.frontend')) {
+                npm {
+                    devDependency "karma"
+                }
+
+                kotlinFrontend {
+                    sourceMaps = true
+
+                    karma {
+                        enableWebPack = true
+                        port = 9876
+                        runnerPort = 9100
+                        reporters = ["progress"]
+                        frameworks = ["qunit"]
+                        preprocessors = ["webpack"]
+                        plugins = ["karma-webpack", "karma-phantomjs-launcher", "karma-junit-reporter", "karma-qunit"]
+                    }
+                }
+
+            }
+        } else if (it.plugins.hasPlugin('kotlin-platform-common')) {
+            archivesBaseName = fn
+
+            dependencies {
+                compile "org.jetbrains.kotlin:kotlin-stdlib-common"
+                compile "org.jetbrains.kotlinx:kotlinx-coroutines-core-common:0.25.0"
+                testCompile "org.jetbrains.kotlin:kotlin-test-annotations-common"
+                testCompile "org.jetbrains.kotlin:kotlin-test-common"
+            }
+
+            if (path != ':environment:core') {
+                dependencies {
+                    compile project(':environment:core')
+                }
+            }
+
+            compileKotlinCommon {
+                kotlinOptions.allWarningsAsErrors = true
+            }
+
+            kotlin {
+                experimental {
+                    coroutines 'enable'
+                }
+            }
+
+        }
+    }
+}
+

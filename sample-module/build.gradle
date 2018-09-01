@@ -1,0 +1,22 @@
+apply plugin: 'kotlin-platform-js'
+apply plugin: 'org.jetbrains.kotlin.frontend'
+
+def indirect = project.path+'-indirect'
+project(indirect) {
+    apply plugin: 'kotlin-platform-js'
+    dependencies {
+        compile project(':environment:js:headers:minimist-npm')
+        compile project(':environment:js:headers:source-map-support-npm')
+    }
+}
+
+dependencies {
+    compile project(indirect)
+}
+
+kotlinFrontend {
+    npm {
+        dependency "minimist"
+        dependency "source-map-support"
+    }
+}

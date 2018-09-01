@@ -1,0 +1,36 @@
+pluginManagement {
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id in [
+                    'kotlin-platform-common',
+                    'org.jetbrains.kotlin.jvm',
+                    'kotlin-platform-jvm',
+                    'kotlin-platform-js',
+                    'kotlin-dce-js',
+                    'konan']) {
+                useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:${requested.version}")
+            }
+        }
+    }
+}
+
+include ':environment:core', ':environment:js', ':environment:js:indirect'
+
+headers 'minimist', 'source-map-support'
+
+npmModules ':sample-module'
+
+rootProject.name = 'kotlin-frontend-plugin-issue-104'
+
+def headers(String... jsModules) {
+    include(jsModules.collect {
+        ":environment:js:headers:$it-npm".toString()
+    }.toArray(new String[0]))
+}
+
+def npmModules(String... jsModules) {
+    include(jsModules)
+    include(jsModules.collect {
+        "$it-indirect".toString()
+    }.toArray(new String[0]))
+}
