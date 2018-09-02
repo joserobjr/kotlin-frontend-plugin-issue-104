@@ -47,9 +47,9 @@ subprojects {
                     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core-js:0.25.0"
                     compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlin_version"
                 }
-            } else if (path != ':environment:js:indirect') {
+            } else {
                 dependencies {
-                    compile project(':environment:js:indirect')
+                    compile project(':environment:js')
                 }
             }
 

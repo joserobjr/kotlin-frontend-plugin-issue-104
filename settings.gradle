@@ -14,11 +14,11 @@ pluginManagement {
     }
 }
 
-include ':environment:core', ':environment:js', ':environment:js:indirect'
+include ':environment:core', ':environment:js'
 
 headers 'minimist', 'source-map-support'
 
-npmModules ':sample-module'
+include ':sample-module'
 
 rootProject.name = 'kotlin-frontend-plugin-issue-104'
 
@@ -28,9 +28,3 @@ def headers(String... jsModules) {
     }.toArray(new String[0]))
 }
 
-def npmModules(String... jsModules) {
-    include(jsModules)
-    include(jsModules.collect {
-        "$it-indirect".toString()
-    }.toArray(new String[0]))
-}
